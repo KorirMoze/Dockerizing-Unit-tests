@@ -18,6 +18,7 @@ namespace DockerProject.Controllers
         [HttpGet(Name = "Get Users") ]
         public async Task<IActionResult> Get()
         {
+            var users = await _usersService.GetAllUsers();
             return Ok("All Good");
         }
     }
