@@ -19,7 +19,13 @@ namespace DockerProject.Controllers
         public async Task<IActionResult> Get()
         {
             var users = await _usersService.GetAllUsers();
-            return Ok("All Good");
+            
+            if (users.Any())
+            {
+                return Ok(users);
+
+            }
+            return NotFound();
         }
     }
 }

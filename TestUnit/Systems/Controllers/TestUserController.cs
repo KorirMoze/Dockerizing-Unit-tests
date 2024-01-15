@@ -4,6 +4,7 @@ using DockerProject.Services;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using TestUnit.Fixtures;
 
 namespace TestUnit.Systems.Controllers
 {
@@ -14,6 +15,9 @@ namespace TestUnit.Systems.Controllers
         {
             //Arrange
             var mockUserService = new Mock<IUsersService>();
+            mockUserService
+             .Setup(service => service.GetAllUsers())
+             .ReturnsAsync(UsersFixtures.GetTestUsers);
 
             var sut = new UsersController(mockUserService.Object);
             //Act
@@ -47,15 +51,36 @@ namespace TestUnit.Systems.Controllers
 
             mockUserService
                 .Setup(service => service.GetAllUsers())
+                .ReturnsAsync(UsersFixtures.GetTestUsers);
+
+            var sut = new UsersController(mockUserService.Object);
+            //Act
+            var result = await sut.Get();
+            //Assert
+            result.Should().BeOfType<OkObjectResult>();
+            var objectResult = (OkObjectResult)result;
+            objectResult.Value.Should().BeOfType<List<User>>();
+           
+        }
+        [Fact]
+        public async Task Get_onNoUsersFound_Returns404()
+        {
+            //Arrange
+            var mockUserService = new Mock<IUsersService>();
+
+            mockUserService
+                .Setup(service => service.GetAllUsers())
                 .ReturnsAsync(new List<User>());
 
             var sut = new UsersController(mockUserService.Object);
             //Act
             var result = await sut.Get();
             //Assert
-            mockUserService.Verify(
-                service => service.GetAllUsers(),
-                Times.Once());
+            result.Should().BeOfType<NotFoundResult>();
+            var objectResult = (NotFoundResult)result;
+            objectResult.StatusCode.Should().Be(404);
+           
+
         }
     }
 }
